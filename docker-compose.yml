@@ -58,7 +58,7 @@ services:
       - RABBITMQ_QUEUE=my_queue
       - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/dev
       - LOG_LEVEL=1
-    command: sh -c "./main -r runWebApp"
+    command: sh -c "sleep 10 && ./main -r runWebApp"
     networks:
       - app-network
 
@@ -80,6 +80,6 @@ services:
       - RABBITMQ_QUEUE=my_queue
       - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/dev
       - LOG_LEVEL=1
-    command: sh -c "./main -r runWorkers"
+    command: sh -c "sleep 10 && ./main -r runWorkers"
     networks:
       - app-network
