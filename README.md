@@ -57,3 +57,7 @@ De même, je n'ai ajouté aucun index ne sachant pas quelles requêtes seront ef
 - Créer un exchange/binding/queue (+dlq?) et lancer rabbitmq
 - `go run main.go -r webApp`
 - `go run main.go -r webWorkers`
+
+ou 
+
+- `docker compose up -d`

@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	config := common.InitConf(".env")
+	config := common.InitConf()
 
 	var executableName string
 	app := &cli.App{

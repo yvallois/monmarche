@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
 )
 
 var DB *gorm.DB
@@ -17,8 +18,8 @@ func Connect(user string, password string, host string, port string, database st
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("failed to connect to database with user %s, and name %s. Error: %s",
-			user, database, err.Error()))
+		log.Fatalf("failed to connect to database with user %s, and name %s. Error: %s",
+			user, database, err.Error())
 	}
 	setConnectionPool(DB, poolSize)
 }

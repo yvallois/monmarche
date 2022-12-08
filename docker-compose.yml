@@ -1,0 +1,85 @@
+version: "3.8"
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  postgresql:
+    image: "postgres:14.1-alpine"
+    container_name: "mon-marche-postgresql"
+    restart: always
+    hostname: postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+      - ./config/postgresql/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    environment:
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    container_name: "mon-marche-rabbitmq"
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    command: bash -c 'chmod -R 777 /etc/rabbitmq; chown -R rabbitmq:rabbitmq /etc/rabbitmq; rabbitmq-server'
+    volumes:
+      - ./config/rabbitmq/etc/:/etc/rabbitmq/
+      - ./data/rabbitmq/:/var/lib/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: P3H7QeSmJ7A7kAIQnvxvYZ
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - app-network
+
+  web_app:
+    depends_on:
+      - postgresql
+      - rabbitmq
+    container_name: "mon-marche-webapp"
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_NAME=test_ticket
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=0.0.0.0
+      - DATABASE_PORT=5432
+      - RABBITMQ_EXCHANGE=my_exchange
+      - RABBITMQ_ROUTING_KEY=my.custom.binding
+      - RABBITMQ_QUEUE=my_queue
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/dev
+      - LOG_LEVEL=1
+    command: sh -c "./main -r runWebApp"
+    networks:
+      - app-network
+
+  web_worker:
+    depends_on:
+      - postgresql
+      - rabbitmq
+      - web_app
+    container_name: "mon-marche-webworker"
+    build: .
+    environment:
+      - DATABASE_NAME=mon_marche_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - RABBITMQ_EXCHANGE=my_exchange
+      - RABBITMQ_ROUTING_KEY=my.custom.binding
+      - RABBITMQ_QUEUE=my_queue
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/dev
+      - LOG_LEVEL=1
+    command: sh -c "./main -r runWorkers"
+    networks:
+      - app-network

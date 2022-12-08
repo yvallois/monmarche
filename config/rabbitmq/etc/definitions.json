@@ -1,0 +1,108 @@
+{
+  "rabbit_version": "3.8.34",
+  "rabbitmq_version": "3.8.34",
+  "product_name": "RabbitMQ",
+  "product_version": "3.8.34",
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "tpd0fu+p2I1sIAznn356ICQo9nrmZy51vq4HwL5R9DpuDy8s",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator",
+      "limits": {}
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    },
+    {
+      "name": "dev"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "dev",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [],
+  "global_parameters": [
+    {
+      "name": "internal_cluster_id",
+      "value": "rabbitmq-cluster-id-sRzWB4oUnWy7rSrCLM5J1g"
+    }
+  ],
+  "policies": [],
+  "queues": [
+    {
+      "name": "my_queue_dlq",
+      "vhost": "dev",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "my_queue",
+      "vhost": "dev",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "my_exchange_dlq",
+        "x-delivery-limit": 3,
+        "x-queue-type": "quorum"
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "my_exchange",
+      "vhost": "dev",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "my_exchange_dlq",
+      "vhost": "dev",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "my_exchange",
+      "vhost": "dev",
+      "destination": "my_queue",
+      "destination_type": "queue",
+      "routing_key": "my.custom.binding",
+      "arguments": {}
+    },
+    {
+      "source": "my_exchange_dlq",
+      "vhost": "dev",
+      "destination": "my_queue_dlq",
+      "destination_type": "queue",
+      "routing_key": "my.custom.binding",
+      "arguments": {}
+    }
+  ]
+}

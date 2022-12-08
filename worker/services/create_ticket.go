@@ -11,7 +11,7 @@ type CreateTicketService struct {
 }
 
 func (s *CreateTicketService) CreateTicket(body string) bool {
-	log.Printf("Received a message:\n%s", body)
+	log.Printf("Received a message: %s", body)
 	ticket, err := helpers.TicketParser(body)
 	if err != nil {
 		log.Printf("An error occured during ticket creation %v", err)

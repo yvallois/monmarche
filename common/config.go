@@ -1,8 +1,11 @@
 package common
 
 import (
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 	"log"
+	"os"
+	"reflect"
+	"strings"
 )
 
 var Conf *Config
@@ -19,16 +22,33 @@ type Config struct {
 	RabbitMQURI        string `mapstructure:"RABBITMQ_URI"`
 }
 
-func InitConf(fileName string) Config {
-	viper.SetConfigFile(fileName)
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Could not environment: %v", err)
+func InitConf() Config {
+	_ = godotenv.Load()
+	Conf = &Config{
+		DatabaseName:       os.Getenv("DATABASE_NAME"),
+		DatabaseUser:       os.Getenv("DATABASE_USER"),
+		DatabasePassword:   os.Getenv("DATABASE_PASSWORD"),
+		DatabaseHost:       os.Getenv("DATABASE_HOST"),
+		DatabasePort:       os.Getenv("DATABASE_PORT"),
+		RabbitMQExchange:   os.Getenv("RABBITMQ_EXCHANGE"),
+		RabbitMQRoutingKey: os.Getenv("RABBITMQ_ROUTING_KEY"),
+		RabbitMQQueue:      os.Getenv("RABBITMQ_QUEUE"),
+		RabbitMQURI:        os.Getenv("RABBITMQ_URI"),
 	}
-	err = viper.Unmarshal(&Conf)
+
+	var emptyVariables []string
+	v := reflect.ValueOf(Conf)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	typeOfS := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		if v.Field(i).Interface() == "" {
+			emptyVariables = append(emptyVariables, typeOfS.Field(i).Name)
+		}
+	}
+	if len(emptyVariables) != 0 {
+		log.Fatalf("the following environment variables are missing: %s", strings.Join(emptyVariables, ", "))
+	}
 	return *Conf
 }
